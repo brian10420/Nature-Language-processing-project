@@ -1,0 +1,51 @@
+(hw1) E:\Master_1\NLP\HW1>python main.py
+[==================================================] 100.0% 958.5/958.4MB downloaded
+The Gensim model loaded successfully!
+Model vocabulary size: 999,999
+Processing analogies: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 19544/19544 [26:16<00:00, 12.40it/s] 
+
+Prediction Statistics:
+Total questions: 19544
+Successful predictions: 19544 / 19544 (100.00%)
+Sample predictions: ['Iraq', 'Thailand', 'China', 'Germany', 'Switzerland']
+Sample gold answers: ['Iraq', 'Thailand', 'China', 'Germany', 'Switzerland', 'Egypt', 'Australia', 'Vietnam', 'Cuba', 'Finland']
+
+=== EVALUATION RESULTS ===
+Overall Accuracy: 87.27%
+
+Category-wise Accuracy:
+Category: semantic, Accuracy: 85.23%
+Category: syntactic, Accuracy: 88.96%
+
+Sub-category Accuracy:
+Sub-Category : capital-common-countries, Accuracy: 98.42%
+Sub-Category : capital-world, Accuracy: 95.45%
+Sub-Category : currency, Accuracy: 37.64%
+Sub-Category : city-in-state, Accuracy: 80.54%
+Sub-Category : family, Accuracy: 84.98%
+Sub-Category : gram1-adjective-to-adverb, Accuracy: 69.66%
+Sub-Category : gram2-opposite, Accuracy: 60.71%
+Sub-Category : gram3-comparative, Accuracy: 96.92%
+Sub-Category : gram4-superlative, Accuracy: 99.20%
+Sub-Category : gram5-present-participle, Accuracy: 97.73%
+Sub-Category : gram6-nationality-adjective, Accuracy: 92.75%
+Sub-Category : gram7-past-tense, Accuracy: 83.78%
+Sub-Category : gram8-plural, Accuracy: 94.52%
+Sub-Category : gram9-plural-verbs, Accuracy: 95.17%
+
+=== PREDICTION EXAMPLES ===
+Question: Athens Greece Baghdad Iraq
+Predicted: Iraq, Gold: Iraq, Correct: True
+---
+Question: Athens Greece Bangkok Thailand
+Predicted: Thailand, Gold: Thailand, Correct: True
+---
+Question: Athens Greece Beijing China
+Predicted: China, Gold: China, Correct: True
+---
+Question: Athens Greece Berlin Germany
+Predicted: Germany, Gold: Germany, Correct: True
+---
+Question: Athens Greece Bern Switzerland
+Predicted: Switzerland, Gold: Switzerland, Correct: True
+---

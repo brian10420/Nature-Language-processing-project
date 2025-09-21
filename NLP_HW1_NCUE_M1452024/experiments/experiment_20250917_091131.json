@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "vector_size": 150,
+    "window": 5,
+    "min_count": 10,
+    "workers": 20,
+    "epochs": 3,
+    "sg": 1,
+    "negative": 5,
+    "sample": 0.001,
+    "min_n": 3,
+    "max_n": 6,
+    "sample_ratio": 0.2,
+    "batch_size": 10000,
+    "random_seed": 42,
+    "verbose": true
+  },
+  "corpus_statistics": {
+    "sampled_lines": 1124731
+  },
+  "training_history": {
+    "word2vec": {
+      "training_time": 1167.93146109581,
+      "vocabulary_size": 677294,
+      "vector_size": 150,
+      "epochs": 3,
+      "timestamp": "2025-09-17T09:31:18.338480"
+    },
+    "fasttext": {
+      "training_time": 2326.7215654850006,
+      "vocabulary_size": 677308,
+      "vector_size": 150,
+      "epochs": 3,
+      "timestamp": "2025-09-17T10:11:29.134748"
+    }
+  },
+  "evaluation_results": {},
+  "timestamp": "2025-09-17T10:11:29.799285"
+}
