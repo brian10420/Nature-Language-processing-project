@@ -96,9 +96,6 @@ uv run NLP_HW1_NCUE_M1452024.py
   - Geographic categories show poorest performance (0% accuracy)
 - **Deliverables**: 7 TODO implementations, evaluation reports, t-SNE visualizations
 
-### HW2-5: [To be updated]
-*Details will be added as assignments are released*
-
 ## 📈 Performance Benchmarks
 
 | Model | Dataset Size | Accuracy (Overall) | Semantic | Syntactic |
@@ -108,6 +105,11 @@ uv run NLP_HW1_NCUE_M1452024.py
 | Custom FastText | 20% Wiki | 30.43% | 3.39% | 51.98% |
 | Custom Word2Vec | 30% Wiki | 25.06% | 4.68% | 41.99% |
 | Custom FastText | 30% Wiki | 30.58% | 3.99% | 52.67% |
+
+### HW2-5: [To be updated]
+*Details will be added as assignments are released*
+
+
 
 ## 🔧 Common Commands
 
