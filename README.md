@@ -6,7 +6,7 @@ This repository contains all assignments for the **Taiwan AI Academy (TAICA)** N
 
 - **Institution**: Taiwan AI Academy (TAICA)
 - **Course**: Natural Language Processing
-- **Year**: 2024-2025
+- **Year**: 2025-2026
 - **Student ID**: M1452024
 - **University**: National Changhua University of Education (NCUE)
 
