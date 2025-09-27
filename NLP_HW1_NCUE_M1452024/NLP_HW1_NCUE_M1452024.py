@@ -50,7 +50,7 @@ def save_model_data(model, model_name="fasttext_model", save_dir="saved_models")
         model_name: 
         save_dir: 
     """
-    
+    # check exist
     os.makedirs(save_dir, exist_ok=True)
     
     # save model
@@ -66,7 +66,9 @@ def save_model_data(model, model_name="fasttext_model", save_dir="saved_models")
 
 
 def load_saved_model(model_path="saved_models/fasttext_model.pkl"):
-    
+    """
+    load save data
+    """
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: {model_path}")
     
@@ -234,7 +236,8 @@ def todo2_predict_with_pretrained():
         words = analogy.split()
         
         if len(words) == 4:
-            word_a, word_b, word_c, word_d = words
+            words_lower = [w.lower() for w in words]
+            word_a, word_b, word_c, word_d = words_lower
             
             # Store the gold answer (word_d)
             golds.append(word_d)
@@ -404,9 +407,6 @@ def todo6_predict_with_custom_embeddings():
     """
     TODO6: Use trained word embeddings for analogy predictions
     """
-    
-    from sklearn.manifold import TSNE
-    
     # Load data
     data = pd.read_csv("questions-words.csv")
     
@@ -423,7 +423,8 @@ def todo6_predict_with_custom_embeddings():
         for analogy in tqdm(data["Question"], desc=f"Processing {model_name}"):
             words = analogy.split()
             if len(words) == 4:
-                word_a, word_b, word_c, word_d = words
+                words_lower = [w.lower() for w in words]
+                word_a, word_b, word_c, word_d = words_lower
                 golds.append(word_d)
                 
                 try:
@@ -484,7 +485,8 @@ def todo7_plot_tsne_custom_embeddings():
     for question in family_questions:
         words = question.split()
         if len(words) == 4:
-            family_words.update(words)
+            words_lower = [w.lower() for w in words]
+            family_words.update(words_lower)
     
     # Create plots for both models
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
@@ -541,3 +543,6 @@ if __name__ == "__main__":
     # TODO6-7: Custom model evaluation
     results = todo6_predict_with_custom_embeddings()
     todo7_plot_tsne_custom_embeddings()
+
+    
+    

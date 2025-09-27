@@ -62,32 +62,47 @@ class Todo5WordEmbeddingTrainer:
     def _get_default_config(self) -> Dict:
         """
         Get default configuration optimized for Intel i7-14700 (20 cores)
-        
-        Returns:
-            Dictionary with default configuration
         """
+        # default 0.2
+        base_sample_ratio = 0.2
+        if hasattr(self, 'config') and self.config:
+            base_sample_ratio = self.config.get('sample_ratio', 0.2)
+        
+        # 
+        if base_sample_ratio <= 0.05:
+            min_count = 2
+        elif base_sample_ratio <= 0.1:
+            min_count = 3
+        elif base_sample_ratio <= 0.2:
+            min_count = 5
+        else:
+            min_count = 10
+        
         return {
-            # Model parameters
-            'vector_size': 300,      # Reduced for faster training
-            'window': 8,          # Context window 2->8
-            'min_count': 5,         # Minimum word frequency 5->2
-            'workers': 20,           # Use all CPU cores
-            'epochs': 10,           # Balance between speed and quality
-            'sg': 1,                 # Skip-gram (1) vs CBOW (0)
-            'negative': 5,          # Negative sampling
-            'sample': 1e-3,          # Downsampling threshold
+            # Model parameters 
+            'vector_size': 300,      # 300 → 100
+            'window': 5,             # 8 → 5
+            'min_count': min_count,  # dynamic
+            'workers': 20,           
+            'epochs': 7,             # 10 → 3
+            'sg': 0,                 # 1 → 0 (CBOW instedSkip-gram)
+            'negative': 5,          
+            'sample': 1e-2,          # 1e-3 → 1e-2
             
             # FastText specific
-            'min_n': 2,             # Min character n-gram 3->2
-            'max_n': 4,              # Max character n-gram 6->4
+            'min_n': 3,              
+            'max_n': 6,              
             
             # Data parameters
-            'sample_ratio':0.2,  # Sample 20% of Wikipedia
-            'batch_size': 10000,     # Sentences per batch
+            'sample_ratio': base_sample_ratio,
+            'batch_size': 10000,     
             
             # Training parameters
-            'random_seed': 42,       # For reproducibility
-            'verbose': True          # Print progress
+            'random_seed': 42,       
+            'verbose': True,
+            
+            # limit
+            'max_vocab_size': 200000
         }
     
     def check_and_combine_wiki_files(self) -> bool:
@@ -158,61 +173,41 @@ class Todo5WordEmbeddingTrainer:
     
     def preprocess_text(self, text: str, mode: str = 'word2vec') -> str:
         """
-        Optimized preprocessing that preserves proper nouns
+        Optimized preprocessing that preserves sentence structure
         
-        Args:
-            text: Input text string
-            mode: 'word2vec' or 'fasttext'
-        
-        Returns:
-            Preprocessed text string
         """
-        # Split into words first
-        words = text.split()
-        processed_words = []
+        # Step 1: lower
+        text = text.lower()
         
-        for word in words:
-            # Skip empty strings
-            if not word:
-                continue
-                
-            # Check if it's likely a proper noun (capitalized and not at sentence start)
-            is_proper_noun = (len(word) > 1 and 
-                            word[0].isupper() and 
-                            not word.isupper())  # Not all caps (like acronyms)
+        # Step 2: remove URL
+        text = re.sub(r'http\S+|www\S+|https\S+', '', text)
+        
+        # Step 3: remove control sentence
+        text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
+        
+        # Step 4: figure , or .
+        
+        text = re.sub(r'([.!?])', r' \1 ', text)
+        
+        # Step 5: 
+        if mode == 'word2vec':
             
-            if is_proper_noun:
-                # Keep proper nouns as-is (preserving capitalization)
-                # Only remove trailing punctuation
-                clean_word = word.rstrip('.,!?;:')
-                if clean_word:
-                    processed_words.append(clean_word)
-            else:
-                # Regular word processing
-                word_lower = word.lower()
-                
-                if mode == 'word2vec':
-                    # Remove all punctuation and numbers
-                    clean_word = re.sub(r'[^a-z]', '', word_lower)
-                else:  # fasttext
-                    # Keep hyphens for subword learning
-                    clean_word = re.sub(r'[^a-z\-]', '', word_lower)
-                
-                if clean_word:  # Only add non-empty words
-                    processed_words.append(clean_word)
+            text = re.sub(r'[^a-z\s.!?]', ' ', text)
+        else:  # fasttext
+            # FastText 
+            text = re.sub(r'[^a-z\s\-.!?]', ' ', text)
         
-        # Join and normalize whitespace
-        return ' '.join(processed_words)
+        # Step 6: 
+        text = re.sub(r'[.!?]+', ' . ', text)
+        
+        # Step 7: normaliztion
+        text = ' '.join(text.split())
+        
+        return text
     
     def prepare_corpus(self, model_type: str = 'word2vec') -> str:
         """
         Prepare and cache preprocessed corpus for training
-        
-        Args:
-            model_type: 'word2vec' or 'fasttext'
-        
-        Returns:
-            Path to the prepared corpus file
         """
         corpus_path = self.paths[f'{model_type}_corpus']
         
@@ -230,33 +225,47 @@ class Todo5WordEmbeddingTrainer:
         print(f"Preparing corpus for {model_type.upper()}...")
         start_time = time.time()
         
-        processed_lines = []
-        line_count = 0
+        processed_sentences = []
+        sentence_count = 0
         
         with open(self.paths['sampled_wiki'], 'r', encoding='utf-8') as f:
             for line in tqdm(f, desc=f"Processing for {model_type}"):
                 line = line.strip()
-                if len(line) > 10:
-                    processed_line = self.preprocess_text(line, mode=model_type)
-                    if len(processed_line.split()) >= 3:
-                        processed_lines.append(processed_line)
-                        line_count += 1
+                
+                
+                if not line:
+                    continue
+                
+                # preprocess
+                processed_line = self.preprocess_text(line, mode=model_type)
+                
+                # spilt sentence by "."
+                sentences = processed_line.split(' . ')
+                
+                for sent in sentences:
+                    sent = sent.strip()
+                    
+                    # filter
+                    words = sent.split()
+                    if len(words) >= 2:
+                        processed_sentences.append(sent)
+                        sentence_count += 1
                         
-                        # Write in batches to save memory
-                        if len(processed_lines) >= self.config['batch_size']:
+                        # save memories
+                        if len(processed_sentences) >= self.config['batch_size']:
                             with open(corpus_path, 'a', encoding='utf-8') as out_f:
-                                out_f.write('\n'.join(processed_lines) + '\n')
-                            processed_lines = []
+                                out_f.write('\n'.join(processed_sentences) + '\n')
+                            processed_sentences = []
         
-        # Write remaining lines
-        if processed_lines:
+        # write down remain sentence
+        if processed_sentences:
             with open(corpus_path, 'a', encoding='utf-8') as out_f:
-                out_f.write('\n'.join(processed_lines) + '\n')
+                out_f.write('\n'.join(processed_sentences) + '\n')
         
         processing_time = time.time() - start_time
-        print(f"Corpus prepared: {line_count:,} sentences in {processing_time:.2f} seconds")
+        print(f"Corpus prepared: {sentence_count:,} sentences in {processing_time:.2f} seconds")
         
-        self.corpus_stats[f'{model_type}_sentences'] = line_count
+        self.corpus_stats[f'{model_type}_sentences'] = sentence_count
         self.corpus_stats[f'{model_type}_processing_time'] = processing_time
         
         return corpus_path

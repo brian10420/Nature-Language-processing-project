@@ -50,7 +50,7 @@ def save_model_data(model, model_name="fasttext_model", save_dir="saved_models")
         model_name: 
         save_dir: 
     """
-    
+    # check exist
     os.makedirs(save_dir, exist_ok=True)
     
     # save model
@@ -66,7 +66,9 @@ def save_model_data(model, model_name="fasttext_model", save_dir="saved_models")
 
 
 def load_saved_model(model_path="saved_models/fasttext_model.pkl"):
-    
+    """
+    load save data
+    """
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: {model_path}")
     
@@ -234,7 +236,8 @@ def todo2_predict_with_pretrained():
         words = analogy.split()
         
         if len(words) == 4:
-            word_a, word_b, word_c, word_d = words
+            words_lower = [w.lower() for w in words]
+            word_a, word_b, word_c, word_d = words_lower
             
             # Store the gold answer (word_d)
             golds.append(word_d)
@@ -404,9 +407,6 @@ def todo6_predict_with_custom_embeddings():
     """
     TODO6: Use trained word embeddings for analogy predictions
     """
-    
-    from sklearn.manifold import TSNE
-    
     # Load data
     data = pd.read_csv("questions-words.csv")
     
@@ -423,7 +423,8 @@ def todo6_predict_with_custom_embeddings():
         for analogy in tqdm(data["Question"], desc=f"Processing {model_name}"):
             words = analogy.split()
             if len(words) == 4:
-                word_a, word_b, word_c, word_d = words
+                words_lower = [w.lower() for w in words]
+                word_a, word_b, word_c, word_d = words_lower
                 golds.append(word_d)
                 
                 try:
@@ -484,7 +485,8 @@ def todo7_plot_tsne_custom_embeddings():
     for question in family_questions:
         words = question.split()
         if len(words) == 4:
-            family_words.update(words)
+            words_lower = [w.lower() for w in words]
+            family_words.update(words_lower)
     
     # Create plots for both models
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
@@ -525,9 +527,11 @@ def todo7_plot_tsne_custom_embeddings():
 
 def run_batch_experiments():#change ur sample ratio here
     
+    import json
+    from datetime import datetime
     
     # test ratios
-    sample_ratios = [0.05, 0.1, 0.2, 0.3]
+    sample_ratios = [0.05, 0.1, 0.2, 0.3, 0.5]
     
     # test result
     all_results = {}
@@ -551,7 +555,19 @@ def run_batch_experiments():#change ur sample ratio here
                 os.remove(file)
         
         # load config from todo5 class
-        config_override = {'sample_ratio': ratio}
+        if ratio <= 0.05:
+            min_count = 2
+        elif ratio <= 0.1:
+            min_count = 3
+        elif ratio <= 0.2:
+            min_count = 5
+        else:
+            min_count = 10
+
+        config_override = {
+            'sample_ratio': ratio,
+            'min_count': min_count
+        }
         
         # train 
         trainer = Todo5WordEmbeddingTrainer(config_override)
@@ -602,6 +618,9 @@ def save_and_plot_separate_charts(results):
     """
     save and plot
     """
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+    import numpy as np
     
     # save Json
     filename = f"batch_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -705,6 +724,8 @@ def save_and_plot_separate_charts(results):
 
 def create_individual_charts(results):
     
+    import matplotlib.pyplot as plt
+    import numpy as np
     
     # prepare data
     ratios_labels = []
@@ -783,7 +804,7 @@ def create_individual_charts(results):
     
     #ave and compar below
     
-    
+    import matplotlib.pyplot as plt
     from datetime import datetime
     
     # Save JSON
@@ -838,7 +859,6 @@ def evaluate_custom_models_detailed():
     Evaluate custom trained models with file existence check
     """
     
-    
     print("\n" + "="*70)
     print(" DETAILED EVALUATION: CUSTOM MODELS ")
     print("="*70)
@@ -885,7 +905,8 @@ def evaluate_custom_models_detailed():
         for analogy in tqdm(data["Question"], desc=f"Processing {model_name}"):
             words = analogy.split()
             if len(words) == 4:
-                word_a, word_b, word_c, word_d = words
+                words_lower = [w.lower() for w in words]
+                word_a, word_b, word_c, word_d = words_lower
                 golds.append(word_d)
                 
                 try:
@@ -965,7 +986,7 @@ def create_evaluation_report(results):
     """
     Create a detailed evaluation report as DataFrame
     """
-
+    import pandas as pd
     
     # Create comparison dataframe
     comparison_data = []
@@ -1026,7 +1047,6 @@ def test_word_similarity_30percent():
     
     """
     
-    
     print("\n" + "="*70)
     print(" WORD SIMILARITY TEST (30% Data Ratio Models) ")
     print("="*70)
@@ -1085,7 +1105,7 @@ def test_word_similarity_30percent():
                         for sim_word, score in similar:
                             print(f"  → {sim_word:20s} (score: {score:.4f})")
                     else:
-                        print(f"\n'{word}':  NOT IN VOCABULARY")
+                        print(f"\n'{word}': ❌ NOT IN VOCABULARY")
                         model_results[word] = "OOV"
                 else:
                     # FastText can handle any word
@@ -1113,13 +1133,13 @@ def test_word_similarity_30percent():
     print(f"  FastText: 0/{len(test_words)} (handles all words via subwords)")
     
     # Quality observations
+    print("\n Key Observations:")
     print("1. Geographic terms (paris, london) - Check if they appear and with what similarity")
     print("2. Semantic relationships (king-queen, man-woman) - Should show gender pairs")
     print("3. Syntactic patterns (good-better, bad-worse) - Should show comparative forms")
     print("4. Domain clusters (computer-software-internet) - Should group together")
     
-    # Save detailed results to CSV
-    save_similarity_results_to_csv(results, test_words)
+    
     
     return results
 
@@ -1179,15 +1199,15 @@ def test_word_similarity_30percent():
 if __name__ == "__main__":
     
     # TODO1
-    #df = todo1_process_data_to_dataframe()
+    # df = todo1_process_data_to_dataframe()
     
     # TODO2
     '''
-    preds, golds, model = todo2_predict_with_pretrained()
+    #preds, golds, model = todo2_predict_with_pretrained()
     
     # save the model for TODO3 usage
-    model_path = save_model_data(model)
-    print("Model data saved for TODO3 usage")
+    #model_path = save_model_data(model)
+    #print("Model data saved for TODO3 usage")
     '''
     
     # TODO3
@@ -1240,14 +1260,16 @@ if __name__ == "__main__":
     '''
     #Batch experience : start it before you change ur sample ratio which u want to test.
     '''
-    results = run_batch_experiments()
+    batch_results = run_batch_experiments()
 
     #evalute result in Todo 5
-    results = evaluate_custom_models_detailed()
+    detailed_results = evaluate_custom_models_detailed()
     
     
-    df, pivot = create_evaluation_report(results)
+    df, pivot = create_evaluation_report(detailed_results)
 
     #Simple most similar texts evaluate for question 4
-    similarity_results = test_word_similarity_30percent()
+    #similarity_results = test_word_similarity_30percent()
     '''
+    
+    
