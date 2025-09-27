@@ -134,17 +134,6 @@ uv pip compile pyproject.toml -o requirements.txt
 - Model files and large datasets are excluded from version control (see .gitignore)
 - Training times vary significantly based on hardware and data size
 
-## 🤝 Contributing
-
-This is a personal academic repository for TAICA coursework. While not open for contributions, feedback and discussions about the implementations are welcome.
-
-## 📄 License
-
-Academic use only. All assignments are property of Taiwan AI Academy and National Changhua University of Education.
-
-## 📧 Contact
-
-For questions about the implementations, please refer to the individual assignment READMEs or contact through the TAICA course platform.
 
 ---
 
